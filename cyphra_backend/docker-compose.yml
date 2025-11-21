@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  web:
+    image: artemys
+    container_name: sui_backend
+    build: 
+      context: .                # Use the root directory for building the image
+      dockerfile: Dockerfile    # Use your Dockerfile
+    # volumes:
+    #   - .:/code
+    ports:
+      - "8000:8000"
+    environment:
+      SQLALCHEMY_DATABASE_URL: ${SQLALCHEMY_DATABASE_URL}
+      BASE_URL: ${BASE_URL}
+      API_KEY: ${API_KEY}
+      REDIS_URL: ${BASE_URL}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY}
+      GOOGLE_GEMINI_KEY: ${GOOGLE_GEMINI_KEY}
+      ATOMASDK_BEARER_AUTH: ${ATOMASDK_BEARER_AUTH}
+      FASTAPI_BASE_URL: ${FASTAPI_BASE_URL}
+      WEBHOOK_SHARED_SECRET: ${WEBHOOK_SHARED_SECRET}
+      MLOPS_ENCRYPTION_KEY: ${MLOPS_ENCRYPTION_KEY}
+
+
+  redis:
+    image: redis:alpine
+    container_name: sui_redis
+    ports:
+      - "6379:6379"
+
+  celery_worker:
+    container_name: sui_celery_worker
+    build: .
+    command: celery -A app.celery.celery worker --loglevel=info
+    depends_on:
+      - redis
+    environment:
+      SQLALCHEMY_DATABASE_URL: ${SQLALCHEMY_DATABASE_URL}
+      BASE_URL: ${BASE_URL}
+      API_KEY: ${API_KEY}
+      REDIS_URL: ${BASE_URL}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY}
+      GOOGLE_GEMINI_KEY: ${GOOGLE_GEMINI_KEY}
+      ATOMASDK_BEARER_AUTH: ${ATOMASDK_BEARER_AUTH}
+      FASTAPI_BASE_URL: ${FASTAPI_BASE_URL}
+      WEBHOOK_SHARED_SECRET: ${WEBHOOK_SHARED_SECRET}
+      MLOPS_ENCRYPTION_KEY: ${MLOPS_ENCRYPTION_KEY}
+
+  celery_beat:
+    container_name: sui_celery_beat
+    build: .
+    command: celery -A app.celery.celery beat --loglevel=info
+    depends_on:
+      - redis
+    environment:
+      SQLALCHEMY_DATABASE_URL: ${SQLALCHEMY_DATABASE_URL}
+      BASE_URL: ${BASE_URL}
+      API_KEY: ${API_KEY}
+      REDIS_URL: ${BASE_URL}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY}
+      GOOGLE_GEMINI_KEY: ${GOOGLE_GEMINI_KEY}
+      ATOMASDK_BEARER_AUTH: ${ATOMASDK_BEARER_AUTH}
+      FASTAPI_BASE_URL: ${FASTAPI_BASE_URL}
+      WEBHOOK_SHARED_SECRET: ${WEBHOOK_SHARED_SECRET}
+      MLOPS_ENCRYPTION_KEY: ${MLOPS_ENCRYPTION_KEY}
