@@ -1,0 +1,7 @@
+ node ./scripts/addVerifier.ts \
+        --network testnet \
+        --package-id 0xb2bd06391c3606f4c412167e42d55c49e48b55292105a00039d9f055136a46a3 \
+        --registry-id 0x9bad161551b0be99ac44ea9e6e577bdb9f3a746eabb3919d4adb6c0eab3214fb \
+        --admin-secret-key "" \
+        --fund-amount 0.004 \
+        --update-env
