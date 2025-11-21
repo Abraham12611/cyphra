@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RSA Key Generator & Validator</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+          Oxygen, Ubuntu, Cantarell, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+      }
+
+      .container {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      }
+
+      h1 {
+        color: #333;
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 2.5em;
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .section {
+        margin-bottom: 40px;
+        padding: 25px;
+        border: 2px solid #e1e5e9;
+        border-radius: 8px;
+        background: #fafbfc;
+      }
+
+      .section h2 {
+        color: #333;
+        margin-top: 0;
+        border-bottom: 2px solid #667eea;
+        padding-bottom: 10px;
+      }
+
+      button {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        margin: 10px 5px;
+      }
+
+      button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+      }
+
+      button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+
+      textarea {
+        width: 100%;
+        height: 150px;
+        border: 2px solid #ddd;
+        border-radius: 6px;
+        padding: 12px;
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+        background: #f8f9fa;
+        resize: vertical;
+        box-sizing: border-box;
+      }
+
+      textarea:focus {
+        border-color: #667eea;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .key-display {
+        background: #f8f9fa;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 15px;
+        margin: 10px 0;
+      }
+
+      .key-display h4 {
+        margin: 0 0 10px 0;
+        color: #555;
+      }
+
+      .key-text {
+        font-family: 'Courier New', monospace;
+        font-size: 11px;
+        word-break: break-all;
+        background: white;
+        padding: 10px;
+        border-radius: 4px;
+        border: 1px solid #eee;
+        max-height: 120px;
+        overflow-y: auto;
+      }
+
+      .success {
+        background: linear-gradient(45deg, #4caf50, #45a049);
+        color: white;
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+        font-size: 18px;
+        font-weight: bold;
+        margin: 20px 0;
+        animation: successPulse 0.6s ease-in-out;
+      }
+
+      .error {
+        background: linear-gradient(45deg, #f44336, #d32f2f);
+        color: white;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        margin: 15px 0;
+      }
+
+      .info {
+        background: linear-gradient(45deg, #2196f3, #1976d2);
+        color: white;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 15px 0;
+      }
+
+      .format-info {
+        background: linear-gradient(45deg, #ff9800, #f57c00);
+        color: white;
+        padding: 10px;
+        border-radius: 6px;
+        margin: 10px 0;
+        font-size: 14px;
+      }
+
+      @keyframes successPulse {
+        0% {
+          transform: scale(0.95);
+          opacity: 0.8;
+        }
+        50% {
+          transform: scale(1.02);
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      .loading {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-left: 10px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .copy-btn {
+        background: #28a745;
+        font-size: 12px;
+        padding: 5px 10px;
+        margin-left: 10px;
+      }
+
+      .format-btn {
+        background: #17a2b8;
+        font-size: 12px;
+        padding: 5px 10px;
+        margin-left: 5px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+
+      .input-group {
+        margin-bottom: 20px;
+      }
+
+      .input-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 600;
+        color: #555;
+      }
+
+      @media (max-width: 768px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🔐 RSA Key Generator & Validator</h1>
+
+      <div class="section">
+        <h2>Generate RSA Key Pair</h2>
+        <div class="info">
+          <strong>Info:</strong> This tool generates 2048-bit RSA key pairs
+          using your browser's secure Web Crypto API. Keys are generated locally
+          and never sent to any server.
+        </div>
+        <button onclick="generateKeyPair()" id="generateBtn">
+          Generate New Key Pair
+        </button>
+        <div id="keyPairDisplay"></div>
+      </div>
+
+      <div class="section">
+        <h2>Validate Key Pair Match</h2>
+        <div class="info">
+          <strong>Instructions:</strong> Paste public and private keys below to
+          validate if they match. Supports PEM, Base64, and Hex formats.
+        </div>
+
+        <div class="format-info">
+          📝 <strong>Supported Formats:</strong><br />
+          • <strong>PEM:</strong> -----BEGIN PUBLIC/PRIVATE KEY-----...<br />
+          • <strong>Base64:</strong> Raw base64 string (auto-detected)<br />
+          • <strong>Hex:</strong> Hexadecimal string (auto-detected)
+        </div>
+
+        <div class="input-group">
+          <label for="publicKeyInput">🔑 Public Key:</label>
+          <textarea
+            id="publicKeyInput"
+            placeholder="Enter public key in PEM, Base64, or Hex format:
+
+PEM format:
+-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA...
+-----END PUBLIC KEY-----
+
+Base64 format:
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA...
+
+Hex format:
+30820122300d06092a864886f70d01010105000382010f..."
+          ></textarea>
+        </div>
+
+        <div class="input-group">
+          <label for="privateKeyInput">🔐 Private Key:</label>
+          <textarea
+            id="privateKeyInput"
+            placeholder="Enter private key in PEM, Base64, or Hex format:
+
+PEM format:
+-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC...
+-----END PRIVATE KEY-----
+
+Base64 format:
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC...
+
+Hex format:
+308204bd02010002..."
+          ></textarea>
+        </div>
+
+        <button onclick="validateKeyPair()" id="validateBtn">
+          Validate Key Pair Match
+        </button>
+        <div id="validationResult"></div>
+      </div>
+    </div>
+
+    <script>
+      let currentPublicKey = null;
+      let currentPrivateKey = null;
+
+      // Format detection and conversion functions
+      function detectKeyFormat(keyString) {
+        const cleaned = keyString.trim();
+
+        if (cleaned.includes('-----BEGIN') && cleaned.includes('-----END')) {
+          return 'pem';
+        } else if (/^[0-9a-fA-F]+$/.test(cleaned.replace(/\s/g, ''))) {
+          return 'hex';
+        } else if (/^[A-Za-z0-9+/=]+$/.test(cleaned.replace(/\s/g, ''))) {
+          return 'base64';
+        } else {
+          throw new Error('Unknown key format. Expected PEM, Base64, or Hex.');
+        }
+      }
+
+      function convertToArrayBuffer(keyString) {
+        const cleaned = keyString.trim();
+        const format = detectKeyFormat(cleaned);
+
+        switch (format) {
+          case 'pem':
+            // Extract base64 content from PEM
+            const base64Content = cleaned
+              .replace(/-----BEGIN.*?-----/, '')
+              .replace(/-----END.*?-----/, '')
+              .replace(/\r|\n|\s/g, '');
+            return base64ToArrayBuffer(base64Content);
+
+          case 'base64':
+            return base64ToArrayBuffer(cleaned.replace(/\s/g, ''));
+
+          case 'hex':
+            const hexCleaned = cleaned.replace(/\s/g, '');
+            const bytes = new Uint8Array(hexCleaned.length / 2);
+            for (let i = 0; i < hexCleaned.length; i += 2) {
+              bytes[i / 2] = parseInt(hexCleaned.substr(i, 2), 16);
+            }
+            return bytes.buffer;
+
+          default:
+            throw new Error('Unsupported format');
+        }
+      }
+
+      function getKeyFormatInfo(keyString) {
+        try {
+          const format = detectKeyFormat(keyString);
+          const buffer = convertToArrayBuffer(keyString);
+          return {
+            format: format.toUpperCase(),
+            size: buffer.byteLength,
+            valid: true,
+          };
+        } catch (error) {
+          return {
+            format: 'UNKNOWN',
+            size: 0,
+            valid: false,
+            error: error.message,
+          };
+        }
+      }
+
+      async function generateKeyPair() {
+        const generateBtn = document.getElementById('generateBtn');
+        const keyPairDisplay = document.getElementById('keyPairDisplay');
+
+        generateBtn.disabled = true;
+        generateBtn.innerHTML = 'Generating... <span class="loading"></span>';
+        keyPairDisplay.innerHTML = '';
+
+        try {
+          // Generate RSA key pair
+          const keyPair = await window.crypto.subtle.generateKey(
+            {
+              name: 'RSA-OAEP',
+              modulusLength: 2048,
+              publicExponent: new Uint8Array([1, 0, 1]),
+              hash: 'SHA-256',
+            },
+            true,
+            ['encrypt', 'decrypt']
+          );
+
+          currentPublicKey = keyPair.publicKey;
+          currentPrivateKey = keyPair.privateKey;
+
+          // Export keys in multiple formats
+          const publicKeyPem = await exportKey(keyPair.publicKey, 'spki');
+          const privateKeyPem = await exportKey(keyPair.privateKey, 'pkcs8');
+
+          const publicKeyBase64 = await exportKeyAsBase64(
+            keyPair.publicKey,
+            'spki'
+          );
+          const privateKeyBase64 = await exportKeyAsBase64(
+            keyPair.privateKey,
+            'pkcs8'
+          );
+
+          const publicKeyHex = await exportKeyAsHex(keyPair.publicKey, 'spki');
+          const privateKeyHex = await exportKeyAsHex(
+            keyPair.privateKey,
+            'pkcs8'
+          );
+
+          displayKeyPair(
+            publicKeyPem,
+            privateKeyPem,
+            publicKeyBase64,
+            privateKeyBase64,
+            publicKeyHex,
+            privateKeyHex
+          );
+
+          generateBtn.disabled = false;
+          generateBtn.innerHTML = 'Generate New Key Pair';
+        } catch (error) {
+          console.error('Error generating key pair:', error);
+          keyPairDisplay.innerHTML =
+            '<div class="error">Error generating key pair: ' +
+            error.message +
+            '</div>';
+          generateBtn.disabled = false;
+          generateBtn.innerHTML = 'Generate New Key Pair';
+        }
+      }
+
+      async function exportKey(key, format) {
+        const exported = await window.crypto.subtle.exportKey(format, key);
+        const exportedAsString = arrayBufferToBase64(exported);
+        const header =
+          format === 'spki'
+            ? '-----BEGIN PUBLIC KEY-----'
+            : '-----BEGIN PRIVATE KEY-----';
+        const footer =
+          format === 'spki'
+            ? '-----END PUBLIC KEY-----'
+            : '-----END PRIVATE KEY-----';
+
+        return (
+          header +
+          '\n' +
+          exportedAsString.match(/.{1,64}/g).join('\n') +
+          '\n' +
+          footer
+        );
+      }
+
+      async function exportKeyAsBase64(key, format) {
+        const exported = await window.crypto.subtle.exportKey(format, key);
+        return arrayBufferToBase64(exported);
+      }
+
+      async function exportKeyAsHex(key, format) {
+        const exported = await window.crypto.subtle.exportKey(format, key);
+        const bytes = new Uint8Array(exported);
+        return Array.from(bytes, (byte) =>
+          byte.toString(16).padStart(2, '0')
+        ).join('');
+      }
+
+      function arrayBufferToBase64(buffer) {
+        let binary = '';
+        const bytes = new Uint8Array(buffer);
+        const len = bytes.byteLength;
+        for (let i = 0; i < len; i++) {
+          binary += String.fromCharCode(bytes[i]);
+        }
+        return window.btoa(binary);
+      }
+
+      function base64ToArrayBuffer(base64) {
+        const binaryString = window.atob(base64);
+        const len = binaryString.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        return bytes.buffer;
+      }
+
+      function displayKeyPair(
+        publicKeyPem,
+        privateKeyPem,
+        publicKeyBase64,
+        privateKeyBase64,
+        publicKeyHex,
+        privateKeyHex
+      ) {
+        const keyPairDisplay = document.getElementById('keyPairDisplay');
+        keyPairDisplay.innerHTML = `
+                <div class="grid">
+                    <div class="key-display">
+                        <h4>🔑 Public Key</h4>
+                        <div class="key-text" id="publicKeyText">${publicKeyPem}</div>
+                        <button class="copy-btn" onclick="copyToClipboard('publicKeyText')">Copy PEM</button>
+                        <button class="format-btn" onclick="showKeyInFormat('${publicKeyBase64}', 'publicKeyText', 'Base64')">Base64</button>
+                        <button class="format-btn" onclick="showKeyInFormat('${publicKeyHex}', 'publicKeyText', 'Hex')">Hex</button>
+                        <button class="format-btn" onclick="showKeyInFormat('${publicKeyPem}', 'publicKeyText', 'PEM')">PEM</button>
+                    </div>
+                    <div class="key-display">
+                        <h4>🔐 Private Key</h4>
+                        <div class="key-text" id="privateKeyText">${privateKeyPem}</div>
+                        <button class="copy-btn" onclick="copyToClipboard('privateKeyText')">Copy PEM</button>
+                        <button class="format-btn" onclick="showKeyInFormat('${privateKeyBase64}', 'privateKeyText', 'Base64')">Base64</button>
+                        <button class="format-btn" onclick="showKeyInFormat('${privateKeyHex}', 'privateKeyText', 'Hex')">Hex</button>
+                        <button class="format-btn" onclick="showKeyInFormat('${privateKeyPem}', 'privateKeyText', 'PEM')">PEM</button>
+                    </div>
+                </div>
+            `;
+      }
+
+      function showKeyInFormat(keyData, elementId, format) {
+        const element = document.getElementById(elementId);
+        if (format === 'Hex') {
+          // Format hex with spaces for readability
+          const formatted = keyData.match(/.{1,64}/g).join('\n');
+          element.textContent = formatted;
+        } else {
+          element.textContent = keyData;
+        }
+      }
+
+      async function validateKeyPair() {
+        const publicKeyInput = document
+          .getElementById('publicKeyInput')
+          .value.trim();
+        const privateKeyInput = document
+          .getElementById('privateKeyInput')
+          .value.trim();
+        const validationResult = document.getElementById('validationResult');
+        const validateBtn = document.getElementById('validateBtn');
+
+        validationResult.innerHTML = '';
+
+        if (!publicKeyInput) {
+          validationResult.innerHTML =
+            '<div class="error">Please enter a public key!</div>';
+          return;
+        }
+
+        if (!privateKeyInput) {
+          validationResult.innerHTML =
+            '<div class="error">Please enter a private key!</div>';
+          return;
+        }
+
+        validateBtn.disabled = true;
+        validateBtn.innerHTML = 'Validating... <span class="loading"></span>';
+
+        try {
+          // Get format info for debugging
+          const pubKeyInfo = getKeyFormatInfo(publicKeyInput);
+          const privKeyInfo = getKeyFormatInfo(privateKeyInput);
+
+          console.log('Public Key Info:', pubKeyInfo);
+          console.log('Private Key Info:', privKeyInfo);
+
+          if (!pubKeyInfo.valid) {
+            throw new Error(`Invalid public key format: ${pubKeyInfo.error}`);
+          }
+
+          if (!privKeyInfo.valid) {
+            throw new Error(`Invalid private key format: ${privKeyInfo.error}`);
+          }
+
+          // Convert keys to ArrayBuffer
+          const publicKeyBuffer = convertToArrayBuffer(publicKeyInput);
+          const privateKeyBuffer = convertToArrayBuffer(privateKeyInput);
+
+          // Import the public key
+          const importedPublicKey = await window.crypto.subtle.importKey(
+            'spki',
+            publicKeyBuffer,
+            {
+              name: 'RSA-OAEP',
+              hash: 'SHA-256',
+            },
+            true,
+            ['encrypt']
+          );
+
+          // Import the private key
+          const importedPrivateKey = await window.crypto.subtle.importKey(
+            'pkcs8',
+            privateKeyBuffer,
+            {
+              name: 'RSA-OAEP',
+              hash: 'SHA-256',
+            },
+            true,
+            ['decrypt']
+          );
+
+          // Test if the keys match by encrypting with public key and decrypting with private key
+          const testMessage = new TextEncoder().encode(
+            'test-message-for-validation'
+          );
+
+          try {
+            const encrypted = await window.crypto.subtle.encrypt(
+              {
+                name: 'RSA-OAEP',
+              },
+              importedPublicKey,
+              testMessage
+            );
+
+            const decrypted = await window.crypto.subtle.decrypt(
+              {
+                name: 'RSA-OAEP',
+              },
+              importedPrivateKey,
+              encrypted
+            );
+
+            const decryptedMessage = new TextDecoder().decode(decrypted);
+
+            if (decryptedMessage === 'test-message-for-validation') {
+              validationResult.innerHTML = `
+                            <div class="success">
+                                ✅ SUCCESS@rsakey.html<br>
+                                Private key matches the public key!<br>
+                                <small>Public: ${pubKeyInfo.format} (${pubKeyInfo.size} bytes) | Private: ${privKeyInfo.format} (${privKeyInfo.size} bytes)</small>
+                            </div>
+                        `;
+            } else {
+              validationResult.innerHTML =
+                '<div class="error">❌ Private key does not match the public key!</div>';
+            }
+          } catch (decryptError) {
+            console.error('Decrypt error:', decryptError);
+            validationResult.innerHTML =
+              '<div class="error">❌ Private key does not match the public key!</div>';
+          }
+        } catch (error) {
+          console.error('Validation error:', error);
+          validationResult.innerHTML =
+            '<div class="error">❌ Invalid key format or validation failed: ' +
+            error.message +
+            '</div>';
+        }
+
+        validateBtn.disabled = false;
+        validateBtn.innerHTML = 'Validate Key Pair Match';
+      }
+
+      function copyToClipboard(elementId) {
+        const element = document.getElementById(elementId);
+        const text = element.textContent;
+
+        navigator.clipboard
+          .writeText(text)
+          .then(function () {
+            // Visual feedback
+            const originalText = element.innerHTML;
+            element.innerHTML =
+              '<span style="color: #4CAF50; font-weight: bold;">✓ Copied!</span>';
+            setTimeout(() => {
+              element.innerHTML = originalText;
+            }, 1000);
+          })
+          .catch(function (err) {
+            console.error('Could not copy text: ', err);
+          });
+      }
+
+      // Generate initial key pair on page load
+      window.addEventListener('load', function () {
+        generateKeyPair();
+      });
+    </script>
+  </body>
+</html>
