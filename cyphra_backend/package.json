@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@mysten/seal": "^0.9.4"
+  }
+}
